@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Callable
+from pathlib import Path
 from typing import Protocol
 
 from .models import CaptureSettings, ScreenPoint, ScreenRegion
@@ -44,17 +45,17 @@ class CaptureRunner:
         settings: CaptureSettings,
         region: ScreenRegion,
         next_button: ScreenPoint,
-    ) -> int:
-        """Run a capture and return the number of screenshots saved."""
+    ) -> list[Path]:
+        """Run a capture and return the screenshot paths in page order."""
         self._report_progress(
             f"Starting in {settings.initial_delay:g} seconds..."
         )
         if self._stop_event.wait(settings.initial_delay):
-            return 0
+            return []
 
         settings.output_folder.mkdir(parents=True, exist_ok=True)
         number_width = max(3, len(str(settings.pages)))
-        saved = 0
+        saved_paths: list[Path] = []
 
         for page_number in range(1, settings.pages + 1):
             if self._stop_event.is_set():
@@ -68,8 +69,9 @@ class CaptureRunner:
                 f"{settings.filename_prefix}_"
                 f"{page_number:0{number_width}d}.png"
             )
-            image.save(settings.output_folder / filename)
-            saved += 1
+            output_path = settings.output_folder / filename
+            image.save(output_path)
+            saved_paths.append(output_path)
 
             if page_number == settings.pages:
                 break
@@ -78,4 +80,4 @@ class CaptureRunner:
             if self._stop_event.wait(settings.load_delay):
                 break
 
-        return saved
+        return saved_paths

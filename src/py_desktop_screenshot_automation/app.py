@@ -16,6 +16,7 @@ from .models import (
     SettingsError,
     parse_capture_settings,
 )
+from .pdf_export import export_screenshots_to_pdf
 from .selector import ScreenSelector, Selection, SelectionMode
 
 
@@ -260,11 +261,21 @@ class PDFCaptureApp:
     ) -> None:
         runner = CaptureRunner(self.backend, self.stop_event, self._set_progress)
         try:
-            saved = runner.run(settings, region, next_button)
+            screenshot_paths = runner.run(settings, region, next_button)
+            if not screenshot_paths:
+                self._set_progress("No screenshots were captured.")
+                return
+
+            self._set_progress("Creating PDF...")
+            pdf_path = export_screenshots_to_pdf(
+                screenshot_paths,
+                settings.output_folder / f"{settings.filename_prefix}.pdf",
+            )
+            saved = len(screenshot_paths)
             message = (
-                f"Capture stopped. Saved {saved} screenshot(s)."
+                f"Capture stopped. Saved {saved} page(s) to {pdf_path.name}."
                 if self.stop_event.is_set()
-                else f"Finished. Saved {saved} screenshot(s)."
+                else f"Finished. Saved {saved} page(s) to {pdf_path.name}."
             )
             self._set_progress(message)
         except self.backend.fail_safe_exception:

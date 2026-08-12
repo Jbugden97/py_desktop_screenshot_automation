@@ -1,6 +1,6 @@
 [project]
 name = "py-desktop-screenshot-automation"
-version = "0.1.0"
+version = "0.2.0"
 description = "A desktop app for automating region-based PDF page screenshots"
 readme = "README.md"
 authors = [
@@ -22,6 +22,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pyinstaller>=6.11.0",
+    "pypdf>=5.0.0",
     "pytest>=8.3.0",
 ]
 

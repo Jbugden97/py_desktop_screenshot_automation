@@ -42,9 +42,13 @@ def test_runner_captures_every_page_and_clicks_between_pages(tmp_path: Path) -> 
     button = ScreenPoint(900, 700)
     settings = CaptureSettings(3, 0, 0, "page", tmp_path)
 
-    saved = runner.run(settings, region, button)
+    saved_paths = runner.run(settings, region, button)
 
-    assert saved == 3
+    assert [path.name for path in saved_paths] == [
+        "page_001.png",
+        "page_002.png",
+        "page_003.png",
+    ]
     assert backend.regions == [region, region, region]
     assert backend.clicks == [button, button]
     assert [path.name for path in backend.saved_paths] == [
@@ -62,12 +66,12 @@ def test_runner_stops_before_capture_when_already_cancelled(tmp_path: Path) -> N
     runner = CaptureRunner(backend, stop_event, lambda _message: None)
     settings = CaptureSettings(3, 0, 0, "page", tmp_path)
 
-    saved = runner.run(
+    saved_paths = runner.run(
         settings,
         ScreenRegion(0, 0, 100, 100),
         ScreenPoint(100, 100),
     )
 
-    assert saved == 0
+    assert saved_paths == []
     assert backend.saved_paths == []
     assert backend.clicks == []

@@ -2,7 +2,8 @@
 
 A small desktop application that automatically captures a selected area of a
 PDF viewer, clicks its **Next Page** button, waits for the next page, and
-repeats. The distributable application targets Windows 10 and Windows 11.
+repeats. The captured pages are combined into one ordered PDF automatically.
+The distributable application targets Windows 10 and Windows 11.
 
 ## Download for Windows
 
@@ -24,8 +25,14 @@ from this repository's Releases page.
 6. Click **Start capture** and leave the PDF viewer unobstructed.
 
 The selector displays a frozen image of the current desktop so the page stays
-visible while you draw the capture region. Screenshots are saved as
-`page_001.png`, `page_002.png`, and so on.
+visible while you draw the capture region. The app temporarily saves images as
+`page_001.png`, `page_002.png`, and so on, then combines them in that order as
+`page.pdf` (or `<your-prefix>.pdf`). After the PDF is safely written, the
+temporary PNG files are deleted. If PDF creation fails, the PNG files are kept
+so no captured pages are lost.
+
+If you stop a run early, the pages captured so far are still converted into a
+PDF.
 
 Move the mouse pointer to the top-left corner at any time to trigger
 PyAutoGUI's emergency stop.
@@ -72,6 +79,7 @@ src/py_desktop_screenshot_automation/
 ├── automation.py  # testable capture workflow
 ├── backend.py     # PyAutoGUI desktop adapter
 ├── models.py      # data models and validation
+├── pdf_export.py  # ordered PDF creation and PNG cleanup
 └── selector.py    # visible desktop region/point selector
 packaging/
 └── windows.spec   # single-file Windows executable recipe
