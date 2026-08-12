@@ -6,7 +6,7 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_submodules
 
 
-project_root = Path(SPECPATH).parent.parent
+project_root = Path(SPECPATH).parent
 entry_point = project_root / "packaging" / "windows_entry.py"
 
 hidden_imports = (
