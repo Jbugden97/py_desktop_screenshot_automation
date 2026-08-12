@@ -1,0 +1,29 @@
+[project]
+name = "py-desktop-screenshot-automation"
+version = "0.1.0"
+description = "A desktop app for automating region-based PDF page screenshots"
+readme = "README.md"
+authors = [
+    { name = "James Bugden", email = "72581711+Jbugden97@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "pillow>=11.0.0",
+    "pyautogui>=0.9.54",
+]
+
+[project.scripts]
+py-desktop-screenshot-automation = "py_desktop_screenshot_automation:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.11.0",
+    "pytest>=8.3.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
