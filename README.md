@@ -24,6 +24,9 @@ from this repository's Releases page.
 5. Enter the number of pages and loading delays.
 6. Click **Start capture** and leave the PDF viewer unobstructed.
 
+The main window can be resized. When the available height is smaller than the
+controls, use the vertical scrollbar or mouse wheel to reach every setting.
+
 The selector displays a frozen image of the current desktop so the page stays
 visible while you draw the capture region. The app temporarily saves images as
 `page_001.png`, `page_002.png`, and so on, then combines them in that order as
@@ -80,6 +83,7 @@ src/py_desktop_screenshot_automation/
 ├── backend.py     # PyAutoGUI desktop adapter
 ├── models.py      # data models and validation
 ├── pdf_export.py  # ordered PDF creation and PNG cleanup
+├── scrollable_frame.py # resizable scrolling UI container
 └── selector.py    # visible desktop region/point selector
 packaging/
 └── windows.spec   # single-file Windows executable recipe

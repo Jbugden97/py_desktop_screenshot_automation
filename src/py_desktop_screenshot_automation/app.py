@@ -17,6 +17,7 @@ from .models import (
     parse_capture_settings,
 )
 from .pdf_export import export_screenshots_to_pdf
+from .scrollable_frame import ScrollableFrame
 from .selector import ScreenSelector, Selection, SelectionMode
 
 
@@ -26,8 +27,9 @@ class PDFCaptureApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
         self.root.title("PDF Page Screenshot Capture")
-        self.root.geometry("650x520")
-        self.root.resizable(False, False)
+        self.root.geometry("700x560")
+        self.root.minsize(440, 360)
+        self.root.resizable(True, True)
 
         self.capture_region: ScreenRegion | None = None
         self.next_button: ScreenPoint | None = None
@@ -47,7 +49,9 @@ class PDFCaptureApp:
         self._build_ui()
 
     def _build_ui(self) -> None:
-        container = ttk.Frame(self.root, padding=20)
+        scrollable = ScrollableFrame(self.root)
+        scrollable.pack(fill="both", expand=True)
+        container = ttk.Frame(scrollable.content, padding=20)
         container.pack(fill="both", expand=True)
         ttk.Label(
             container,
@@ -66,27 +70,37 @@ class PDFCaptureApp:
             container, text="Screen selections", padding=12
         )
         selections.pack(fill="x")
-        self._add_selection_row(
-            selections,
-            0,
-            "1. Select page area",
-            self.select_capture_region,
-            self.region_status,
-        )
-        self._add_selection_row(
-            selections,
-            1,
-            "2. Select Next button",
-            self.select_next_button,
-            self.button_status,
-        )
-        self._add_selection_row(
-            selections,
-            2,
-            "3. Choose output folder",
-            self.choose_output_folder,
-            self.folder_status,
-        )
+        selections.columnconfigure(1, weight=1)
+        status_labels = [
+            self._add_selection_row(
+                selections,
+                0,
+                "1. Select page area",
+                self.select_capture_region,
+                self.region_status,
+            ),
+            self._add_selection_row(
+                selections,
+                1,
+                "2. Select Next button",
+                self.select_next_button,
+                self.button_status,
+            ),
+            self._add_selection_row(
+                selections,
+                2,
+                "3. Choose output folder",
+                self.choose_output_folder,
+                self.folder_status,
+            ),
+        ]
+
+        def resize_status_labels(event: tk.Event) -> None:
+            wrap_length = max(120, event.width - 230)
+            for label in status_labels:
+                label.configure(wraplength=wrap_length)
+
+        selections.bind("<Configure>", resize_status_labels)
 
         settings = ttk.LabelFrame(container, text="Capture settings", padding=12)
         settings.pack(fill="x", pady=15)
@@ -131,13 +145,13 @@ class PDFCaptureApp:
         button_text: str,
         command,
         status: tk.StringVar,
-    ) -> None:
+    ) -> ttk.Label:
         ttk.Button(parent, text=button_text, command=command).grid(
             row=row, column=0, sticky="w", pady=5
         )
-        ttk.Label(parent, textvariable=status, wraplength=360).grid(
-            row=row, column=1, sticky="w", padx=15
-        )
+        status_label = ttk.Label(parent, textvariable=status, wraplength=520)
+        status_label.grid(row=row, column=1, sticky="ew", padx=15)
+        return status_label
 
     @staticmethod
     def _add_setting(
