@@ -11,6 +11,7 @@ from .automation import CaptureRunner
 from .backend import PyAutoGUIBackend
 from .models import (
     CaptureSettings,
+    CompressionPreset,
     ScreenPoint,
     ScreenRegion,
     SettingsError,
@@ -41,6 +42,8 @@ class PDFCaptureApp:
         self.load_delay = tk.StringVar(value="1.5")
         self.initial_delay = tk.StringVar(value="3")
         self.filename_prefix = tk.StringVar(value="page")
+        self.compression = tk.StringVar(value=CompressionPreset.BALANCED)
+        self.ocr_enabled = tk.BooleanVar(value=False)
         self.region_status = tk.StringVar(value="Not selected")
         self.button_status = tk.StringVar(value="Not selected")
         self.folder_status = tk.StringVar(value="Not selected")
@@ -112,6 +115,21 @@ class PDFCaptureApp:
             settings, 2, "Delay before starting:", self.initial_delay, "seconds"
         )
         self._add_setting(settings, 3, "Filename prefix:", self.filename_prefix)
+        ttk.Label(settings, text="PDF quality:").grid(
+            row=4, column=0, sticky="w", pady=4
+        )
+        ttk.Combobox(
+            settings,
+            textvariable=self.compression,
+            values=[preset.value for preset in CompressionPreset],
+            state="readonly",
+            width=18,
+        ).grid(row=4, column=1, columnspan=2, sticky="w", padx=10)
+        ttk.Checkbutton(
+            settings,
+            text="Make PDF searchable with English OCR (slower)",
+            variable=self.ocr_enabled,
+        ).grid(row=5, column=0, columnspan=3, sticky="w", pady=(8, 2))
 
         controls = ttk.Frame(container)
         controls.pack(fill="x", pady=10)
@@ -239,6 +257,8 @@ class PDFCaptureApp:
             initial_delay=self.initial_delay.get(),
             filename_prefix=self.filename_prefix.get(),
             output_folder=self.output_folder,
+            compression=self.compression.get(),
+            ocr_enabled=self.ocr_enabled.get(),
         )
 
     def start_capture(self) -> None:
@@ -284,6 +304,9 @@ class PDFCaptureApp:
             pdf_path = export_screenshots_to_pdf(
                 screenshot_paths,
                 settings.output_folder / f"{settings.filename_prefix}.pdf",
+                compression=settings.compression,
+                searchable=settings.ocr_enabled,
+                report_progress=self._set_progress,
             )
             saved = len(screenshot_paths)
             message = (

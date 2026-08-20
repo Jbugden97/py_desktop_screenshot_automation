@@ -27,6 +27,11 @@ jobs:
       - name: Install uv
         run: python -m pip install uv
 
+      - name: Install and prepare English OCR engine
+        run: |
+          choco install tesseract --version 5.5.3.20260724 -y --no-progress
+          ./scripts/prepare_tesseract.ps1
+
       - name: Sync locked dependencies
         run: uv sync --locked
 
@@ -35,6 +40,9 @@ jobs:
 
       - name: Build portable executable
         run: uv run pyinstaller --noconfirm --clean packaging/windows.spec
+
+      - name: Verify OCR inside packaged executable
+        run: ./dist/PDFPageScreenshotCapture.exe --self-test-ocr
 
       - name: Upload executable
         uses: actions/upload-artifact@v7

@@ -4,11 +4,20 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 
 
 class SettingsError(ValueError):
     """Raised when capture settings are invalid."""
+
+
+class CompressionPreset(StrEnum):
+    """User-facing PDF image compression presets."""
+
+    HIGH_QUALITY = "High quality"
+    BALANCED = "Balanced"
+    SMALLEST_FILE = "Smallest file"
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,6 +50,8 @@ class CaptureSettings:
     initial_delay: float
     filename_prefix: str
     output_folder: Path
+    compression: CompressionPreset = CompressionPreset.BALANCED
+    ocr_enabled: bool = False
 
 
 def parse_capture_settings(
@@ -50,6 +61,8 @@ def parse_capture_settings(
     initial_delay: str,
     filename_prefix: str,
     output_folder: Path | None,
+    compression: str = CompressionPreset.BALANCED,
+    ocr_enabled: bool = False,
 ) -> CaptureSettings:
     """Validate UI strings and return strongly typed capture settings."""
     if output_folder is None:
@@ -78,10 +91,17 @@ def parse_capture_settings(
             "underscores, and hyphens only."
         )
 
+    try:
+        compression_preset = CompressionPreset(compression)
+    except ValueError as exc:
+        raise SettingsError("Choose a valid PDF quality preset.") from exc
+
     return CaptureSettings(
         pages=pages,
         load_delay=page_delay,
         initial_delay=start_delay,
         filename_prefix=prefix,
         output_folder=output_folder,
+        compression=compression_preset,
+        ocr_enabled=ocr_enabled,
     )
